@@ -1,8 +1,14 @@
-{ "name": "json5"
-, "description": "Modern JSON."
-, "version": "0.0.0"
-, "author": "Aseem Kishore <aseem.kishore@gmail.com>"
-, "scripts":
-  { "test": "node test"
+{
+  "name": "json5",
+  "description": "Modern JSON.",
+  "version": "0.0.0",
+  "author": "Aseem Kishore <aseem.kishore@gmail.com>",
+  "main": "json5",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "~1.0.3"
+  },
+  "scripts": {
+    "test": "mocha --ui exports --reporter list"
   }
 }
