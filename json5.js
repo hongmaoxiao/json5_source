@@ -3,6 +3,7 @@
 //
 // This file is modeled directly off of Douglas Crockford's json_parse.js:
 // https://github.com/douglascrockford/JSON-js/blob/master/json_parse.js
+
 exports.parse = (function() {
     "use strict";
 
@@ -127,80 +128,155 @@ exports.parse = (function() {
             error('Bad string');
         },
 
-    white = function() {
-// Skip whitespace.
-      while (ch && ch <= ' ') {
-        next();
-      }
-    },
+        white = function() {
+            // Skip whitespace.
+            while (ch && ch <= ' ') {
+                next();
+            }
+        },
 
-    word = function() {
-// true, false, or null.
-      switch(ch) {
-        case 't':
-          next('t');
-          next('r');
-          next('u');
-          next('e');
-          return true;
-        case 'f':
-          next('f');
-          next('a');
-          next('l');
-          next('s');
-          next('e');
-          return false;
-        case 'n':
-          next('n');
-          next('u');
-          next('l');
-          next('l');
-          return null;
-      }
-      error("Unexpected '" + ch + "'");
-    },
+        word = function() {
+            // true, false, or null.
+            switch (ch) {
+                case 't':
+                    next('t');
+                    next('r');
+                    next('u');
+                    next('e');
+                    return true;
+                case 'f':
+                    next('f');
+                    next('a');
+                    next('l');
+                    next('s');
+                    next('e');
+                    return false;
+                case 'n':
+                    next('n');
+                    next('u');
+                    next('l');
+                    next('l');
+                    return null;
+            }
+            error("Unexpected '" + ch + "'");
+        },
 
-    value, // Place holder for the value function.
+        value, // Place holder for the value function.
 
-    array = function() {
-// Parse an array value.
-      var array = [];
+        array = function() {
+            // Parse an array value.
+            var array = [];
 
-      if (ch === '[') {
-        next('[');
+            if (ch === '[') {
+                next('[');
+                white();
+                if (ch === ']') {
+                    next(']');
+                    return array; // empty array
+                }
+                while (ch) {
+                    array.push(value());
+                    white();
+                    if (ch === ']') {
+                        next(']');
+                        return array;
+                    }
+                    next(',');
+                    white();
+                }
+            }
+            error('Bad array');
+        },
+
+        object = function() {
+            // Parse an object value.
+            var key,
+                object = {};
+            if (ch === '{') {
+                next('{');
+                white();
+                if (ch === '}') {
+                    next('}');
+                    return object; // empty object
+                }
+                while (ch) {
+                    key = string();
+                    white();
+                    next(':');
+                    if (Object.hasOwnProperty.call(object, key)) {
+                        error('Duplicate key "' + key + '"');
+                    }
+                    object[key] = value();
+                    white();
+                    if (ch === '}') {
+                        next('}');
+                        return object;
+                    }
+                    next(',');
+                    white();
+                }
+            }
+            error('Bad object');
+        };
+
+    value = function() {
+        // Parse a JSON value. It could be an object, an array, a string, a number,
+        // or a word.
         white();
-        if (ch === ']') {
-          next(']');
-          return array; // empty array
+        switch (ch) {
+            case '{':
+                return object();
+            case '[':
+                return array();
+            case '"':
+                return string();
+            case '-':
+                return number();
+            default:
+                return ch >= '0' && ch <= '9' ? number() : word();
         }
-        while(ch) {
-          array.push(value());
-          white();
-          if (ch === ']') {
-            next(']');
-            return array;
-          }
-          next(',');
-          white();
-        }
-      }
-      error('Bad array');
-    },
+    };
 
-    object = function() {
-// Parse an object value.
-      var key,
-        object = {};
-      if (ch === '{') {
-        next('{');
-        white();
-        if (ch === '}') {
-          next('}');
-          return object; // empty object
+    // Return the json_parse function. It will have access to all of the above
+    // functions and variables.
+    return function(source, reviver) {
+            var result;
+
+            text = source;
+            at = 0;
+            ch = ' ';
+            result = value();
+            white();
+            if (ch) {
+                error('Syntax error');
+            }
         }
-      }
-    }
-});
+        // If there is a reviver function, we recursively walk the new structure,
+        // passing each name/value pair to the reviver function for possible
+        // transformation, starting with a temporary root object that holds the result
+        // in an empty key. If there is not a reviver function, we simply return the
+        // result.
+
+    return typeof reviver === 'function' ? (function walk(holder, key) {
+        var k, v, value = hodler[key];
+        if (value && typeof value === 'object') {
+            for (k in value) {
+                if (Object.prototype.hasOwnProperty.call(value, k)) {
+                    v = walk(value, k);
+                    if (v !== undefined) {
+                        value[k] = v;
+                    } else {
+                        delete value[k];
+                    }
+                }
+            }
+        }
+        return reviver.call(holder, key, value);
+    }({
+        '': result
+    }, '')) : result;
+}());
+
 exports.stringify = function(obj, replacer, space) {
     // Since regular JSON is a strict subset of JSON5, we'll always output as
     // regular JSON to foster better interoperability. TODO Should we not?
