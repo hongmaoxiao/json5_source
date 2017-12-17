@@ -18,6 +18,7 @@ exports.parse = (function() {
     var at, // the index of the current character
         ch, // The current character
         escapee = {
+            "'": "'",
             '"': '"',
             '\\': '\\',
             '/': '/',
