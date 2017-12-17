@@ -22,6 +22,7 @@ exports.parse = (function() {
             '"': '"',
             '\\': '\\',
             '/': '/',
+            '\n': '',       // Replace newlines in strings w/ empty string
             b: '\b',
             f: '\f',
             n: '\n',
