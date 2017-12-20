@@ -169,20 +169,34 @@ exports.parse = (function() {
 
         array = function() {
             // Parse an array value.
-            // TODO Update to support trailing commas.
             var array = [];
 
             if (ch === '[') {
                 next('[');
                 white();
-                if (ch === ']') {
-                    next(']');
-                    return array; // empty array
-                }
                 while (ch) {
-                    array.push(value());
+                  if (ch === ']') {
+                    next(']');
+                    return array; // Potentially empty array
+                  }
+                    // Omitted values are allowed and detected by the presence
+                    // of a trailing comma. Whether the value was omitted or
+                    // not, the current character after this block should be
+                    // the character after the value.
+                    if (ch === ',') {
+                        // Pushing an undefined value isn't quite equivalent
+                        // to what ES5 does in practice, but we can emulate it
+                        // by incrementing the array's length.
+                      array.length += 1;
+                        // Don't go next; the comma is the character after the
+                        // omitted (undefined) value.
+                    } else {
+                      array.push(value());
+                        // The various value methods call next(); the current
+                        // character here is now the one after the value.
+                    }
                     white();
-                    if (ch === ']') {
+                    if (ch !== ',') {
                         next(']');
                         return array;
                     }
