@@ -22,7 +22,7 @@ exports.parse = (function() {
             '"': '"',
             '\\': '\\',
             '/': '/',
-            '\n': '',       // Replace newlines in strings w/ empty string
+            '\n': '', // Replace newlines in strings w/ empty string
             b: '\b',
             f: '\f',
             n: '\n',
@@ -175,10 +175,10 @@ exports.parse = (function() {
                 next('[');
                 white();
                 while (ch) {
-                  if (ch === ']') {
-                    next(']');
-                    return array; // Potentially empty array
-                  }
+                    if (ch === ']') {
+                        next(']');
+                        return array; // Potentially empty array
+                    }
                     // Omitted values are allowed and detected by the presence
                     // of a trailing comma. Whether the value was omitted or
                     // not, the current character after this block should be
@@ -187,11 +187,11 @@ exports.parse = (function() {
                         // Pushing an undefined value isn't quite equivalent
                         // to what ES5 does in practice, but we can emulate it
                         // by incrementing the array's length.
-                      array.length += 1;
+                        array.length += 1;
                         // Don't go next; the comma is the character after the
                         // omitted (undefined) value.
                     } else {
-                      array.push(value());
+                        array.push(value());
                         // The various value methods call next(); the current
                         // character here is now the one after the value.
                     }
@@ -210,17 +210,16 @@ exports.parse = (function() {
         object = function() {
             // Parse an object value.
             // TODO Update to support unquoted keys.
-            // TODO Update to support trailing commas.
             var key,
                 object = {};
             if (ch === '{') {
                 next('{');
                 white();
-                if (ch === '}') {
-                    next('}');
-                    return object; // empty object
-                }
                 while (ch) {
+                    if (ch === '}') {
+                        next('}');
+                        return object; // Potentially empty object
+                    }
                     key = string();
                     white();
                     next(':');
@@ -229,7 +228,9 @@ exports.parse = (function() {
                     }
                     object[key] = value();
                     white();
-                    if (ch === '}') {
+                    // If there's no comma after this pair, this needs to be
+                    // the end of the object.
+                    if (ch !== ',') {
                         next('}');
                         return object;
                     }
