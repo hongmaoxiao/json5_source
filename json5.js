@@ -137,8 +137,8 @@ JSON5.parse = (function() {
                                 uffff = uffff * 16 + hex;
                             }
                             string += String.fromCharCode(uffff);
-                        } else if (typeof escape[ch] === "string") {
-                            string += escape[ch];
+                        } else if (typeof escapee[ch] === "string") {
+                            string += escapee[ch];
                         } else {
                             break;
                         }
@@ -357,38 +357,35 @@ JSON5.parse = (function() {
         if (ch) {
             error("Syntax error");
         }
-    };
-    // If there is a reviver function, we recursively walk the new structure,
-    // passing each name/value pair to the reviver function for possible
-    // transformation, starting with a temporary root object that holds the result
-    // in an empty key. If there is not a reviver function, we simply return the
-    // result.
+        // If there is a reviver function, we recursively walk the new structure,
+        // passing each name/value pair to the reviver function for possible
+        // transformation, starting with a temporary root object that holds the result
+        // in an empty key. If there is not a reviver function, we simply return the
+        // result.
 
-    return typeof reviver === "function" ?
-        (function walk(holder, key) {
-            var k,
-                v,
-                value = hodler[key];
-            if (value && typeof value === "object") {
-                for (k in value) {
-                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-                        v = walk(value, k);
-                        if (v !== undefined) {
-                            value[k] = v;
-                        } else {
-                            delete value[k];
+        return typeof reviver === "function" ?
+            (function walk(holder, key) {
+                var k,
+                    v,
+                    value = hodler[key];
+                if (value && typeof value === "object") {
+                    for (k in value) {
+                        if (Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = walk(value, k);
+                            if (v !== undefined) {
+                                value[k] = v;
+                            } else {
+                                delete value[k];
+                            }
                         }
                     }
                 }
-            }
-            return reviver.call(holder, key, value);
-        })({
+                return reviver.call(holder, key, value);
+            }({
                 "": result
-            },
-            ""
-        ) :
-        result;
-})();
+            }, "")) : result;
+    };
+}());
 
 JSON5.stringify = function(obj, replacer, space) {
     // Since regular JSON is a strict subset of JSON5, we'll always output as
