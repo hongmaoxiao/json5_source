@@ -34,12 +34,11 @@ JSON5.parse = (function() {
         text,
         error = function(m) {
             // Call error when something is wrong.
-            throw {
-                name: "SyntaxError",
-                message: m,
-                at: at,
-                text: text
-            };
+            var error = new SyntaxError();
+            error.message = m;
+            error.at = at;
+            error.text = text;
+            throw error;
         },
         next = function(c) {
             // If a c parameter is provided, verify that it matches the current character.
