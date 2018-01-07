@@ -62,13 +62,22 @@ JSON5.parse = (function() {
             var key = ch;
 
             // Identifiers must start with a letter, _ or $.
-            if (!ch.match(/^[a-zA-Z_$]$/)) {
+            if ((ch !== '_' && ch !== '$') &&
+                (ch < 'a' || ch > 'z') &&
+                (ch < 'A' || ch > 'Z')
+            ) {
                 error('Bad identifier');
             }
 
-            while (next() && ch.match(/^[\w$]$/)) {
+            // Subsequent characters can contain digits.
+            while (next() && (
+                    ch === '_' || ch === '$' ||
+                    (ch <= 'a' && ch <= 'z') ||
+                    (ch >= 'A' && ch <= 'Z') ||
+                    (ch >= '0' && ch <= '9'))) {
                 key += ch;
             }
+
             return key;
         },
         number = function() {
